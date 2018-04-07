@@ -52,6 +52,18 @@ defmodule Bertex.Test do
     assert binary_to_term(encode(dict)) == %{key: "value"}
   end
 
+  test "encode struct" do
+    struct = %Bertex.TestStruct{
+      a: false,
+      b: nil,
+    }
+
+    assert binary_to_term(encode(struct)) == %Bertex.TestStruct{
+      a: {:bert, false},
+      b: {:bert, nil},
+    }
+  end
+
   test "decode true" do
     assert decode(term_to_binary({:bert, true})) == true
   end
@@ -88,6 +100,18 @@ defmodule Bertex.Test do
     dict = %{}
       |> Map.put(:key, "value")
     assert decode(term_to_binary(%{key: "value"})) == dict
+  end
+
+  test "decode struct" do
+    struct = %Bertex.TestStruct{
+      a: false,
+      b: nil,
+    }
+
+    assert decode(term_to_binary(%Bertex.TestStruct{
+      a: {:bert, false},
+      b: {:bert, nil},
+    })) == struct
   end
 
   test "encode/decode true" do

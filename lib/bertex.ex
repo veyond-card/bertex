@@ -33,6 +33,16 @@ defmodule Bertex do
     end
   end
 
+  defimpl Bert, for: Map do
+    def encode(map) do
+      Bertex.encode_map(map)
+    end
+
+    def decode(map) do
+      Bertex.decode_map(map)
+    end
+  end
+
   # Inspired by talentdeficit/jsex solution
   defimpl Bert, for: Tuple do
     def encode(tuple) do
@@ -99,7 +109,10 @@ defmodule Bertex do
   end
 
   defimpl Bert, for: Any do
+    def encode(term) when is_map(term), do: Bertex.encode_map(term)
     def encode(term), do: term
+
+    def decode(term) when is_map(term), do: Bertex.decode_map(term)
     def decode(term), do: term
   end
 
@@ -126,4 +139,32 @@ defmodule Bertex do
   def safe_decode(bin) do
     binary_to_term(bin, [:safe]) |> Bert.decode
   end
+
+  @doc false
+  def encode_map(map) do
+    {type, map} = decompose_struct(map)
+
+    map
+    |> Enum.map(fn {key, value} ->
+      {key |> Bert.encode, value |> Bert.encode}
+    end)
+    |> to_map_or_struct!(type)
+  end
+
+  @doc false
+  def decode_map(map) do
+    {type, map} = decompose_struct(map)
+
+    map
+    |> Enum.map(fn {key, value} ->
+      {key |> Bert.decode, value |> Bert.decode}
+    end)
+    |> to_map_or_struct!(type)
+  end
+
+  defp decompose_struct(%{__struct__: type} = struct), do: {type, struct |> Map.from_struct}
+  defp decompose_struct(struct), do: {nil, struct}
+
+  defp to_map_or_struct!(value, nil), do: value |> Map.new
+  defp to_map_or_struct!(value, type), do: Kernel.struct!(type, value)
 end

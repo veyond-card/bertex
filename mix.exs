@@ -9,6 +9,7 @@ defmodule Bertex.Mixfile do
     [ app: :bertex,
       version: "1.3.0",
       elixir: "~> 1.0",
+      elixirc_paths: elixirc_paths(Mix.env),
       name: "Bertex",
       description: @description,
       package: package(),
@@ -23,4 +24,7 @@ defmodule Bertex.Mixfile do
       licenses: ["MIT"],
       links: %{ "Github" => "https://github.com/edgurgel/bertex" } ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_),     do: ["lib"]
 end
